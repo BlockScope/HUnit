@@ -6,6 +6,7 @@ module Test.HUnit.Lang (
   Assertion,
   assertFailure,
   assertEqual,
+  assertCompare,
 
   Result (..),
   performTestCase,
@@ -77,6 +78,44 @@ assertEqual preface expected actual =
       | null preface = Nothing
       | otherwise = Just preface
     expectedMsg = show expected
+    actualMsg = show actual
+
+-- | Asserts that the specified actual value has the expected ordering when
+-- compared to the key value.  The output message will contain the prefix, the
+-- expected ordering with respect to the key value, and the actual value.
+--
+-- If the prefix is the empty string (i.e., @\"\"@), then the prefix is omitted
+-- and only the expected and actual values are output.
+assertCompare :: (HasCallStack, Eq a, Ord a, Enum a, Show a)
+                              => String   -- ^ The message prefix
+                              -> (a -> a -> Bool) -- ^ The comparison
+                              -> a        -- ^ The key value
+                              -> a        -- ^ The actual value
+                              -> Assertion
+assertCompare preface compare key actual =
+    unless (actual `compare` key) $ do
+    (prefaceMsg `deepseq` expectedMsg `deepseq` actualMsg `deepseq` E.throwIO (HUnitFailure location $ ExpectedButGot prefaceMsg expectedMsg actualMsg))
+  where
+    prefaceMsg
+      | null preface = Nothing
+      | otherwise = Just preface
+    expectedCmp =
+      if key `compare` key
+        then
+          if (succ key) `compare` key
+            then " >= "
+            else
+              if (pred key) `compare` key
+                then " <= "
+                else " == "
+        else
+          if (succ key) `compare` key
+            then " > "
+            else
+              if (pred key) `compare` key
+                then " < "
+                else " == "
+    expectedMsg = expectedCmp ++ show key
     actualMsg = show actual
 
 formatFailureReason :: FailureReason -> String

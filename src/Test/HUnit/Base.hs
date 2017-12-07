@@ -19,9 +19,13 @@ module Test.HUnit.Base
 
   -- ** Making assertions
   assertFailure, {- from Test.HUnit.Lang: -}
-  assertBool, assertEqual, assertString,
+  assertBool, assertEqual, assertCompare, assertString,
   Assertion, {- from Test.HUnit.Lang: -}
   (@=?), (@?=), (@?),
+  (@<?), (@?<),
+  (@<=?), (@?<=),
+  (@>?), (@?>),
+  (@>=?), (@?>=),
 
   -- ** Extending the assertion functionality
   Assertable(..), ListAssertable(..),
@@ -143,7 +147,7 @@ instance (AssertionPredicable t) => AssertionPredicable (IO t)
 -- Assertion Construction Operators
 -- --------------------------------
 
-infix  1 @?, @=?, @?=
+infix  1 @?, @=?, @?=, @<?, @?<, @<=?, @?<=, @>?, @?>, @>=?, @?>=
 
 -- | Asserts that the condition obtained from the specified
 --   'AssertionPredicable' holds.
@@ -168,6 +172,54 @@ expected @=? actual = assertEqual "" expected actual
                         -> a -- ^ The expected value
                         -> Assertion
 actual @?= expected = assertEqual "" expected actual
+
+(@<?) :: (HasCallStack, Eq a, Ord a, Enum a, Show a)
+                        => a -- ^ The key value
+                        -> a -- ^ The actual value
+                        -> Assertion
+key @<? actual = assertCompare "" (>) key actual
+
+(@?<) :: (HasCallStack, Eq a, Ord a, Enum a, Show a)
+                        => a -- ^ The actual value
+                        -> a -- ^ The key value
+                        -> Assertion
+actual @?< key = assertCompare "" (<) key actual
+
+(@<=?) :: (HasCallStack, Eq a, Ord a, Enum a, Show a)
+                        => a -- ^ The key value
+                        -> a -- ^ The actual value
+                        -> Assertion
+key @<=? actual = assertCompare "" (>=) key actual
+
+(@?<=) :: (HasCallStack, Eq a, Ord a, Enum a, Show a)
+                        => a -- ^ The actual value
+                        -> a -- ^ The key value
+                        -> Assertion
+actual @?<= key = assertCompare "" (<=) key actual
+
+(@>?) :: (HasCallStack, Eq a, Ord a, Enum a, Show a)
+                        => a -- ^ The key value
+                        -> a -- ^ The actual value
+                        -> Assertion
+key @>? actual = assertCompare "" (<) key actual
+
+(@?>) :: (HasCallStack, Eq a, Ord a, Enum a, Show a)
+                        => a -- ^ The actual value
+                        -> a -- ^ The key value
+                        -> Assertion
+actual @?> key = assertCompare "" (>) key actual
+
+(@>=?) :: (HasCallStack, Eq a, Ord a, Enum a, Show a)
+                        => a -- ^ The key value
+                        -> a -- ^ The actual value
+                        -> Assertion
+key @>=? actual = assertCompare "" (<=) key actual
+
+(@?>=) :: (HasCallStack, Eq a, Ord a, Enum a, Show a)
+                        => a -- ^ The actual value
+                        -> a -- ^ The key value
+                        -> Assertion
+actual @?>= key = assertCompare "" (<) key actual
 
 
 
